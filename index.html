@@ -3,259 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Visions</title>
+    <title>Memory Loss, Therapy</title>
     <style>
-        /* CORE RESET */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #00000000; /* Fallback */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        :root {
+            --glass: rgba(255, 255, 255, 0.12);
+            --border: rgba(255, 255, 255, 0.25);
+            --accent: #00d4ff50;
+            --accent-glow: rgba(0, 212, 255, 0.6);
+            --secondary: #ff2ecc50;
+            --depth: 40px;
         }
 
-        /* GUARANTEED GIF BACKGROUND */
-        .gif-background {
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent !important;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+        }
+
+        /* Background Video - now fully visible */
+        .bg-video {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -2;
-            /* Using ./ ensures it looks in the local folder on GitHub */
-            background: url('./bg.gif') no-repeat center center;
-            background-size: cover;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+            z-index: 2;
+            pointer-events: none;
         }
 
-        .overlay {
+        /* Starfield - no solid black fill, only semi-transparent trail */
+        #starfield {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: rgba(0, 0, 0, 0.4); 
+            pointer-events: none;
+            background: transparent !important;
         }
 
-        /* MAIN UI */
-        #main-container {
-            text-align: center;
-            z-index: 10;
-            transition: all 0.6s ease;
-        }
-
-        h1 {
-            color: white;
-            font-size: 3rem;
-            letter-spacing: 12px;
-            text-transform: uppercase;
-            margin-bottom: 50px;
-            text-shadow: 0 0 20px #ff2d55;
-            animation: floating 4s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        /* 3D FROSTED BUTTONS */
-        .btn-stack {
+        /* 3D Floating Container */
+        .floating-container {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            transform-style: preserve-3d;
+            animation: float3D 8s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .button-group {
+            display: flex;
             gap: 25px;
+            z-index: 3;
+            transform-style: preserve-3d;
         }
 
         .glass-btn {
-            width: 340px;
-            padding: 22px;
+            height: 85px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
+            border: 2px solid var(--border);
+            border-radius: 18px;
             color: white;
-            text-transform: uppercase;
-            letter-spacing: 5px;
             font-weight: bold;
+            text-transform: uppercase;
             cursor: pointer;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            transform: perspective(600px) rotateX(15deg);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.6),
+                inset 0 0 15px rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateZ(0);
+            position: relative;
+            overflow: hidden;
         }
 
-        .glass-btn:hover {
-            transform: perspective(600px) rotateX(0deg) translateY(-10px) scale(1.05);
-            border-color: #ff2d55;
-            box-shadow: 0 0 40px rgba(255, 45, 85, 0.5);
-            background: rgba(255, 45, 85, 0.1);
-        }
-
-        /* VIDEO MODAL (90% WIDTH) */
-        #video-view {
-            display: none;
+        .glass-btn::before {
+            content: '';
             position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            max-width: 1200px;
-            background: rgba(10, 10, 15, 0.98);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 30px;
-            padding: 20px;
-            z-index: 100;
-            flex-direction: column;
-            box-shadow: 0 50px 150px rgba(0,0,0,1);
-            opacity: 0;
-            transform: scale(0.8) perspective(1000px) rotateX(5deg);
-            transition: 0.6s ease;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transform: skewX(-25deg);
+            transition: left 0.7s ease;
         }
 
-        #video-view.active {
-            display: flex;
-            opacity: 1;
-            transform: scale(1) perspective(1000px) rotateX(0deg);
+        #playBtn { width: 230px; font-size: 1.15rem; letter-spacing: 1.2px; }
+        #muteBtn { width: 85px; font-size: 1.6rem; }
+
+        .glass-btn:active { transform: translateZ(10px) scale(0.94); }
+        .glass-btn:hover { 
+            border-color: var(--accent); 
+            box-shadow: 
+                0 0 30px var(--accent-glow),
+                0 15px 40px rgba(0, 0, 0, 0.7),
+                inset 0 0 20px rgba(0, 212, 255, 0.15);
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateZ(25px) translateY(-3px);
         }
 
-        .header {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
+        .glass-btn:hover::before {
+            left: 150%;
         }
 
-        .close { font-size: 55px; color: white; cursor: pointer; line-height: 0.5; }
-        .close:hover { color: #ff2d55; transform: scale(1.1); }
-
-        video {
-            width: 100%;
-            height: auto;
-            border-radius: 15px;
-            background: #000;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        /* PROGRESS BAR / SEEKER */
         .controls {
             margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            width: 85%;
+            max-width: 620px;
+            transform-style: preserve-3d;
+            transform: translateZ(15px);
+            animation: glowPulse 4s ease-in-out infinite alternate;
         }
 
-        input[type="range"] {
+        #seek-bar {
             width: 100%;
+            height: 12px;
+            border-radius: 10px;
+            outline: none;
             cursor: pointer;
-            accent-color: #ff2d55;
-            height: 8px;
-            border-radius: 5px;
+            accent-color: var(--accent);
+            filter: 
+                drop-shadow(0 0 8px var(--accent-glow))
+                drop-shadow(0 0 15px rgba(255, 46, 204, 0.3));
+            background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
 
-        .time-info {
-            display: flex;
-            justify-content: space-between;
-            color: #efefef;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            font-weight: bold;
+        #seek-bar:hover {
+            filter: 
+                drop-shadow(0 0 12px var(--accent-glow))
+                drop-shadow(0 0 20px rgba(255, 46, 204, 0.5));
+            transform: scale(1.02);
+        }
+
+        @keyframes float3D {
+            0% { transform: translateZ(0) rotateX(2deg) rotateY(-3deg); }
+            25% { transform: translateZ(15px) rotateX(-2deg) rotateY(2deg); }
+            50% { transform: translateZ(25px) rotateX(1deg) rotateY(4deg); }
+            75% { transform: translateZ(15px) rotateX(-3deg) rotateY(-2deg); }
+            100% { transform: translateZ(0) rotateX(2deg) rotateY(-3deg); }
+        }
+
+        @keyframes glowPulse {
+            0% { filter: drop-shadow(0 0 5px var(--accent-glow)); }
+            100% { filter: drop-shadow(0 0 15px rgba(255, 46, 204, 0.5)); }
         }
     </style>
 </head>
 <body>
 
-    <!-- This div carries your gif -->
-    <div class="gif-background"></div>
-    <div class="overlay"></div>
+    <!-- Background Video -->
+    <video class="bg-video" src="zoebg.mp4" autoplay muted loop playsinline></video>
+    <canvas id="starfield"></canvas>
 
-    <div id="main-container">
-        <h1>My Visions</h1>
-        <div class="btn-stack">
-            <button class="glass-btn" onclick="playVid('vid1.mp4')">Part One</button>
-            <button class="glass-btn" onclick="playVid('vid2.mp4')">Part Two</button>
-            <button class="glass-btn" onclick="playVid('vid3.mp4')">Final Act</button>
+    <div class="floating-container">
+        <div class="button-group">
+            <button class="glass-btn" id="playBtn">Zoe Baby</button>
+            <button class="glass-btn" id="muteBtn" title="Mute/Unmute">🔊</button>
         </div>
-    </div>
-
-    <!-- VIDEO MODAL -->
-    <div id="video-view">
-        <div class="header">
-            <span class="close" onclick="stopVid()">&times;</span>
-        </div>
-        
-        <video id="mainPlayer" playsinline>
-            <source id="vidSource" src="" type="video/mp4">
-        </video>
 
         <div class="controls">
-            <input type="range" id="seeker" value="0" step="0.1">
-            <div class="time-info">
-                <span id="currentTime">00:00</span>
-                <span id="durationTime">00:00</span>
-            </div>
+            <input type="range" id="seek-bar" value="0" step="0.1">
         </div>
     </div>
 
+    <audio id="audioTrack" preload="auto">
+        <source src="zoebb.mp3" type="audio/mpeg">
+    
+
     <script>
-        const view = document.getElementById('video-view');
-        const main = document.getElementById('main-container');
-        const player = document.getElementById('mainPlayer');
-        const source = document.getElementById('vidSource');
-        const seeker = document.getElementById('seeker');
-        const curTime = document.getElementById('currentTime');
-        const durTime = document.getElementById('durationTime');
+        const audio = document.getElementById('audioTrack');
+        const playBtn = document.getElementById('playBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const seekBar = document.getElementById('seek-bar');
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
 
-        function playVid(file) {
-            source.src = file;
-            player.load();
-            
-            main.style.opacity = "0";
-            setTimeout(() => {
-                main.style.display = "none";
-                view.style.display = "flex";
-                setTimeout(() => {
-                    view.classList.add('active');
-                    player.play();
-                }, 50);
-            }, 500);
-        }
-
-        function stopVid() {
-            player.pause();
-            view.classList.remove('active');
-            setTimeout(() => {
-                view.style.display = "none";
-                main.style.display = "block";
-                setTimeout(() => main.style.opacity = "1", 50);
-            }, 600);
-        }
-
-        // Seeker Update logic
-        player.onloadedmetadata = function() {
-            seeker.max = player.duration;
-            durTime.innerText = formatTime(player.duration);
-        };
-
-        player.ontimeupdate = function() {
-            if (!seeker.matches(':active')) {
-                seeker.value = player.currentTime;
+        // Play/Pause
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play().then(() => playBtn.innerText = "Playing...")
+                    .catch(() => alert("Make sure reloved.mp3 is in the same folder"));
+            } else {
+                audio.pause();
+                playBtn.innerText = "Paused";
             }
-            curTime.innerText = formatTime(player.currentTime);
-        };
+        });
 
-        seeker.oninput = function() {
-            player.currentTime = seeker.value;
-        };
+        // Mute Toggle
+        muteBtn.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            muteBtn.innerText = audio.muted ? "🔇" : "🔊";
+            muteBtn.style.color = audio.muted ? "#ff4d4d" : "white";
+        });
 
-        function formatTime(seconds) {
-            if (isNaN(seconds)) return "00:00";
-            let m = Math.floor(seconds / 60);
-            let s = Math.floor(seconds % 60);
-            return (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
+        // Starfield - TRANSPARENT background so video shows through
+        let stars = [];
+        function initStars() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            stars = Array.from({length: 120}, () => ({
+                x: Math.random() * canvas.width - canvas.width / 2,
+                y: Math.random() * canvas.height - canvas.height / 2,
+                z: Math.random() * 1500,
+                size: Math.random() * 2.5 + 0.5,
+                speed: Math.random() * 2 + 0.3,
+                hue: Math.random() * 60 + 180
+            }));
         }
+
+        function animateStars() {
+            // ONLY semi-transparent trail, NO solid black background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            stars.forEach(s => {
+                s.z -= s.speed;
+                if (s.z <= 0) {
+                    s.z = 1500;
+                    s.x = Math.random() * canvas.width - centerX;
+                    s.y = Math.random() * canvas.height - centerY;
+                }
+
+                const scale = 1500 / s.z;
+                const x = s.x * scale + centerX;
+                const y = s.y * scale + centerY;
+                const size = s.size * scale;
+                const opacity = Math.min(1, 2 - (s.z / 750));
+
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+                gradient.addColorStop(0, `hsla(${s.hue}, 100%, 75%, ${opacity})`);
+                gradient.addColorStop(1, `hsla(${s.hue}, 100%, 50%, 0)`);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animateStars);
+        }
+
+        // Audio Progress
+        audio.ontimeupdate = () => {
+            if (audio.duration) seekBar.value = (audio.currentTime / audio.duration) * 100;
+        };
+        seekBar.oninput = () => {
+            if (audio.duration) audio.currentTime = (seekBar.value / 100) * audio.duration;
+        };
+
+        initStars();
+        animateStars();
+        window.onresize = initStars;
     </script>
 </body>
 </html>
