@@ -3,282 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Loss, Therapy</title>
+    <title>Video Player</title>
     <style>
-        :root {
-            --glass: rgba(255, 255, 255, 0.12);
-            --border: rgba(255, 255, 255, 0.25);
-            --accent: #00d4ff50;
-            --accent-glow: rgba(0, 212, 255, 0.6);
-            --secondary: #ff2ecc50;
-            --depth: 40px;
-        }
-
-        body, html {
+        * {
             margin: 0;
             padding: 0;
-            width: 100%;
+            box-sizing: border-box;
+        }
+        html, body {
             height: 100%;
-            background: transparent !important;
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            perspective: 1200px;
-        }
-
-        /* Background Video - now fully visible */
-        .bg-video {
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.5;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        /* Starfield - no solid black fill, only semi-transparent trail */
-        #starfield {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-            background: transparent !important;
-        }
-
-        /* 3D Floating Container */
-        .floating-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transform-style: preserve-3d;
-            animation: float3D 8s ease-in-out infinite;
-            z-index: 2;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 25px;
-            z-index: 3;
-            transform-style: preserve-3d;
-        }
-
-        .glass-btn {
-            height: 85px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            border: 2px solid var(--border);
-            border-radius: 18px;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            box-shadow: 
-                0 15px 35px rgba(0, 0, 0, 0.6),
-                inset 0 0 15px rgba(255, 255, 255, 0.1),
-                0 0 0 1px rgba(255, 255, 255, 0.05);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translateZ(0);
-            position: relative;
             overflow: hidden;
         }
-
-        .glass-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+        video {
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.2),
-                transparent
-            );
-            transform: skewX(-25deg);
-            transition: left 0.7s ease;
-        }
-
-        #playBtn { width: 230px; font-size: 1.15rem; letter-spacing: 1.2px; }
-        #muteBtn { width: 85px; font-size: 1.6rem; }
-
-        .glass-btn:active { transform: translateZ(10px) scale(0.94); }
-        .glass-btn:hover { 
-            border-color: var(--accent); 
-            box-shadow: 
-                0 0 30px var(--accent-glow),
-                0 15px 40px rgba(0, 0, 0, 0.7),
-                inset 0 0 20px rgba(0, 212, 255, 0.15);
-            background: rgba(255, 255, 255, 0.18);
-            transform: translateZ(25px) translateY(-3px);
-        }
-
-        .glass-btn:hover::before {
-            left: 150%;
-        }
-
-        .controls {
-            margin-top: 20px;
-            width: 85%;
-            max-width: 620px;
-            transform-style: preserve-3d;
-            transform: translateZ(15px);
-            animation: glowPulse 4s ease-in-out infinite alternate;
-        }
-
-        #seek-bar {
-            width: 100%;
-            height: 12px;
-            border-radius: 10px;
-            outline: none;
-            cursor: pointer;
-            accent-color: var(--accent);
-            filter: 
-                drop-shadow(0 0 8px var(--accent-glow))
-                drop-shadow(0 0 15px rgba(255, 46, 204, 0.3));
-            background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
-            border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        #seek-bar:hover {
-            filter: 
-                drop-shadow(0 0 12px var(--accent-glow))
-                drop-shadow(0 0 20px rgba(255, 46, 204, 0.5));
-            transform: scale(1.02);
-        }
-
-        @keyframes float3D {
-            0% { transform: translateZ(0) rotateX(2deg) rotateY(-3deg); }
-            25% { transform: translateZ(15px) rotateX(-2deg) rotateY(2deg); }
-            50% { transform: translateZ(25px) rotateX(1deg) rotateY(4deg); }
-            75% { transform: translateZ(15px) rotateX(-3deg) rotateY(-2deg); }
-            100% { transform: translateZ(0) rotateX(2deg) rotateY(-3deg); }
-        }
-
-        @keyframes glowPulse {
-            0% { filter: drop-shadow(0 0 5px var(--accent-glow)); }
-            100% { filter: drop-shadow(0 0 15px rgba(255, 46, 204, 0.5)); }
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
-
-    <!-- Background Video -->
-    <video class="bg-video" src="zoebg.mp4" autoplay muted loop playsinline></video>
-    <canvas id="starfield"></canvas>
-
-    <div class="floating-container">
-        <div class="button-group">
-            <button class="glass-btn" id="playBtn">Zoe Baby</button>
-            <button class="glass-btn" id="muteBtn" title="Mute/Unmute">🔊</button>
-        </div>
-
-        <div class="controls">
-            <input type="range" id="seek-bar" value="0" step="0.1">
-        </div>
-    </div>
-
-    <audio id="audioTrack" preload="auto">
-        <source src="zoebb.mp3" type="audio/mpeg">
-    
-
-    <script>
-        const audio = document.getElementById('audioTrack');
-        const playBtn = document.getElementById('playBtn');
-        const muteBtn = document.getElementById('muteBtn');
-        const seekBar = document.getElementById('seek-bar');
-        const canvas = document.getElementById('starfield');
-        const ctx = canvas.getContext('2d');
-
-        // Play/Pause
-        playBtn.addEventListener('click', () => {
-            if (audio.paused) {
-                audio.play().then(() => playBtn.innerText = "Playing...")
-                    .catch(() => alert("Make sure reloved.mp3 is in the same folder"));
-            } else {
-                audio.pause();
-                playBtn.innerText = "Paused";
-            }
-        });
-
-        // Mute Toggle
-        muteBtn.addEventListener('click', () => {
-            audio.muted = !audio.muted;
-            muteBtn.innerText = audio.muted ? "🔇" : "🔊";
-            muteBtn.style.color = audio.muted ? "#ff4d4d" : "white";
-        });
-
-        // Starfield - TRANSPARENT background so video shows through
-        let stars = [];
-        function initStars() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            stars = Array.from({length: 120}, () => ({
-                x: Math.random() * canvas.width - canvas.width / 2,
-                y: Math.random() * canvas.height - canvas.height / 2,
-                z: Math.random() * 1500,
-                size: Math.random() * 2.5 + 0.5,
-                speed: Math.random() * 2 + 0.3,
-                hue: Math.random() * 60 + 180
-            }));
-        }
-
-        function animateStars() {
-            // ONLY semi-transparent trail, NO solid black background
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-
-            stars.forEach(s => {
-                s.z -= s.speed;
-                if (s.z <= 0) {
-                    s.z = 1500;
-                    s.x = Math.random() * canvas.width - centerX;
-                    s.y = Math.random() * canvas.height - centerY;
-                }
-
-                const scale = 1500 / s.z;
-                const x = s.x * scale + centerX;
-                const y = s.y * scale + centerY;
-                const size = s.size * scale;
-                const opacity = Math.min(1, 2 - (s.z / 750));
-
-                ctx.beginPath();
-                ctx.arc(x, y, size, 0, Math.PI * 2);
-                const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
-                gradient.addColorStop(0, `hsla(${s.hue}, 100%, 75%, ${opacity})`);
-                gradient.addColorStop(1, `hsla(${s.hue}, 100%, 50%, 0)`);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-            });
-
-            requestAnimationFrame(animateStars);
-        }
-
-        // Audio Progress
-        audio.ontimeupdate = () => {
-            if (audio.duration) seekBar.value = (audio.currentTime / audio.duration) * 100;
-        };
-        seekBar.oninput = () => {
-            if (audio.duration) audio.currentTime = (seekBar.value / 100) * audio.duration;
-        };
-
-        initStars();
-        animateStars();
-        window.onresize = initStars;
-    </script>
+    <video 
+        src="1.mp4"
+        autoplay
+        muted
+        controls
+        playsinline
+    >
+        Your browser does not support the video tag.
+    </video>
 </body>
 </html>
